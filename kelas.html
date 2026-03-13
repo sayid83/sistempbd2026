@@ -391,4 +391,1108 @@
       border-color:var(--accent-blue);
       box-shadow:0 0 0 3px rgba(79,142,247,.12);
     }
-    se
+    select.form-control { cursor:pointer; }
+
+    /* ============================================================
+       IMPORT CSV AREA
+    ============================================================ */
+    .import-zone {
+      border:2px dashed #cbd5e1;
+      border-radius:12px; padding:32px;
+      text-align:center; cursor:pointer;
+      transition:all .2s;
+      background:#f8fafc;
+    }
+    .import-zone:hover, .import-zone.dragover {
+      border-color:var(--accent-blue);
+      background:rgba(79,142,247,.05);
+    }
+    .import-zone i { font-size:32px; color:#94a3b8; margin-bottom:10px; display:block; }
+    .import-zone p { font-size:13px; color:#64748b; margin-bottom:6px; }
+    .import-zone small { font-size:11px; color:#94a3b8; }
+
+    /* Preview table untuk import CSV */
+    .preview-wrap {
+      display:none;
+      margin-top:16px;
+      border:1px solid #e2e8f0;
+      border-radius:10px;
+      overflow:hidden;
+    }
+    .preview-header {
+      background:#f8fafc; padding:10px 16px;
+      display:flex; align-items:center;
+      justify-content:space-between;
+      font-size:12px; font-weight:600; color:#374151;
+      border-bottom:1px solid #e2e8f0;
+    }
+    .preview-table { width:100%; border-collapse:collapse; }
+    .preview-table th, .preview-table td {
+      padding:8px 12px; font-size:12px;
+      border-bottom:1px solid #f1f5f9; text-align:left;
+    }
+    .preview-table th { background:#f8fafc; color:#64748b; font-weight:700; }
+    .preview-table tbody tr:last-child td { border-bottom:none; }
+
+    /* ============================================================
+       TOAST & LOADING
+    ============================================================ */
+    .toast-container {
+      position:fixed; bottom:24px; right:24px;
+      z-index:999; display:flex; flex-direction:column; gap:10px;
+    }
+    .toast {
+      display:flex; align-items:center; gap:10px;
+      padding:12px 18px; border-radius:10px;
+      font-size:13px; font-weight:500;
+      box-shadow:0 8px 24px rgba(0,0,0,.15);
+      animation:toastIn .3s ease; max-width:320px;
+    }
+    @keyframes toastIn {
+      from { transform:translateX(100%); opacity:0; }
+      to   { transform:translateX(0);   opacity:1; }
+    }
+    .toast.berjaya { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
+    .toast.error   { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; }
+    .toast.info    { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; }
+
+    .loading-overlay {
+      position:fixed; inset:0;
+      background:rgba(6,14,30,.7);
+      backdrop-filter:blur(4px);
+      display:none; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:999;
+    }
+    .spinner {
+      width:48px; height:48px;
+      border:3px solid rgba(255,255,255,.1);
+      border-top-color:var(--accent-blue);
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-text { color:var(--text-dim); font-size:13px; margin-top:16px; }
+
+    /* ============================================================
+       SKELETON
+    ============================================================ */
+    .skeleton {
+      background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);
+      background-size:200% 100%;
+      animation:skeletonAnim 1.5s infinite;
+      border-radius:8px;
+    }
+    @keyframes skeletonAnim {
+      0%  { background-position:200% 0; }
+      100%{ background-position:-200% 0; }
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width:768px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); box-shadow:8px 0 32px rgba(0,0,0,.4); }
+      .sidebar-overlay.open { display:block; }
+      .hamburger { display:flex; align-items:center; }
+      .main-content { margin-left:0; padding:20px 16px; }
+      .topbar-btn span { display:none; }
+      .topbar-btn { padding:7px 10px; }
+      .page-header { flex-direction:column; }
+      .search-input input { width:160px; }
+      .data-table th:nth-child(4),
+      .data-table td:nth-child(4) { display:none; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Memuatkan...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================
+     TOPBAR
+============================================================ -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <button class="hamburger" onclick="toggleSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <div class="brand-text">
+      <h2>Sistem PBD 2026</h2>
+      <span id="namaGuruTopbar">Cikgu</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <a href="index.html" class="topbar-btn">
+      <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+    </a>
+    <a href="pentaksiran.html" class="topbar-btn accent">
+      <i class="fas fa-clipboard-list"></i><span>Rekod PBD</span>
+    </a>
+    <button class="topbar-btn danger" onclick="buatLogout()">
+      <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
+    </button>
+  </div>
+</header>
+
+<!-- ============================================================
+     SIDEBAR
+============================================================ -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="tutupSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Menu Utama</div>
+    <a href="index.html"        class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+    <a href="kelas.html"        class="nav-item active"><i class="fas fa-school"></i> Pengurusan Kelas</a>
+    <a href="pentaksiran.html"  class="nav-item"><i class="fas fa-clipboard-list"></i> Rekod PBD</a>
+    <a href="laporan.html"      class="nav-item"><i class="fas fa-chart-bar"></i> Laporan & Analitik</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Senarai Kelas</div>
+    <div id="sidebarKelas">
+      <div class="skeleton" style="height:34px;margin-bottom:6px;border-radius:8px"></div>
+      <div class="skeleton" style="height:34px;margin-bottom:6px;border-radius:8px"></div>
+      <div class="skeleton" style="height:34px;border-radius:8px"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     MAIN CONTENT
+============================================================ -->
+<main class="main-content">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1><i class="fas fa-school" style="color:var(--accent-blue)"></i> Pengurusan Kelas</h1>
+      <p>Urus kelas dan senarai murid anda di sini.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="bukaModalTambahKelas()">
+        <i class="fas fa-plus"></i> Tambah Kelas
+      </button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabKelasBtn" onclick="tunjukTab('kelas')">
+      <i class="fas fa-school" style="margin-right:6px"></i>Senarai Kelas
+    </button>
+    <button class="tab-btn" id="tabMuridBtn" onclick="tunjukTab('murid')">
+      <i class="fas fa-users" style="margin-right:6px"></i>Senarai Murid
+    </button>
+  </div>
+
+  <!-- ====== TAB: SENARAI KELAS ====== -->
+  <div id="tabKelas">
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="search-input">
+          <i class="fas fa-search"></i>
+          <input type="text" id="cariKelas" placeholder="Cari kelas..." oninput="filterKelas()"/>
+        </div>
+        <div style="font-size:12px;color:#94a3b8" id="bilanganKelas">—</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama Kelas</th>
+              <th>Subjek</th>
+              <th>Tahun</th>
+              <th>Bil. Murid</th>
+              <th>Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="tableBodyKelas">
+            <tr>
+              <td colspan="6">
+                <div class="skeleton" style="height:36px;margin:4px 0"></div>
+                <div class="skeleton" style="height:36px;margin:4px 0"></div>
+                <div class="skeleton" style="height:36px;margin:4px 0"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: SENARAI MURID ====== -->
+  <div id="tabMurid" style="display:none">
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <!-- Dropdown pilih kelas -->
+          <select id="filterKelasDropdown" class="form-control"
+            style="width:auto;padding:8px 12px;font-size:13px"
+            onchange="muatMurid()">
+            <option value="">— Semua Kelas —</option>
+          </select>
+          <div class="search-input">
+            <i class="fas fa-search"></i>
+            <input type="text" id="cariMurid" placeholder="Cari murid..." oninput="filterMurid()"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-success btn-sm" onclick="bukaModalImport()">
+            <i class="fas fa-file-csv"></i> Import CSV
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="bukaModalTambahMurid()">
+            <i class="fas fa-plus"></i> Tambah Murid
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama Murid</th>
+              <th>No. Kad Pengenalan</th>
+              <th>Jantina</th>
+              <th>Kelas</th>
+              <th>Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="tableBodyMurid">
+            <tr>
+              <td colspan="6">
+                <div class="skeleton" style="height:36px;margin:4px 0"></div>
+                <div class="skeleton" style="height:36px;margin:4px 0"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+
+<!-- ============================================================
+     MODAL: TAMBAH / EDIT KELAS
+============================================================ -->
+<div class="modal-backdrop" id="modalKelas">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalKelasTitle">Tambah Kelas Baru</h3>
+      <button class="modal-close" onclick="tutupModal('modalKelas')">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="kelasIdEdit"/>
+      <div class="form-group">
+        <label class="form-label">Nama Kelas <span>*</span></label>
+        <input type="text" id="inputNamaKelas" class="form-control"
+          placeholder="Contoh: 3 Amanah"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subjek <span>*</span></label>
+        <select id="inputSubjek" class="form-control">
+          <option value="">— Pilih Subjek —</option>
+          <option value="Matematik">Matematik</option>
+          <option value="Sains">Sains</option>
+          <option value="Bahasa Melayu">Bahasa Melayu</option>
+          <option value="Bahasa Inggeris">Bahasa Inggeris</option>
+          <option value="Pendidikan Islam">Pendidikan Islam</option>
+          <option value="Pendidikan Jasmani">Pendidikan Jasmani</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tahun <span>*</span></label>
+        <select id="inputTahun" class="form-control">
+          <option value="">— Pilih Tahun —</option>
+          <option value="1">Tahun 1</option>
+          <option value="2">Tahun 2</option>
+          <option value="3">Tahun 3</option>
+          <option value="4">Tahun 4</option>
+          <option value="5">Tahun 5</option>
+          <option value="6">Tahun 6</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modalKelas')">Batal</button>
+      <button class="btn btn-primary" onclick="simpanKelas()">
+        <i class="fas fa-save"></i> Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MODAL: TAMBAH / EDIT MURID
+============================================================ -->
+<div class="modal-backdrop" id="modalMurid">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalMuridTitle">Tambah Murid Baru</h3>
+      <button class="modal-close" onclick="tutupModal('modalMurid')">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="muridIdEdit"/>
+      <div class="form-group">
+        <label class="form-label">Kelas <span>*</span></label>
+        <select id="inputMuridKelas" class="form-control"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nama Penuh Murid <span>*</span></label>
+        <input type="text" id="inputNamaMurid" class="form-control"
+          placeholder="Contoh: Muhammad Ali bin Abu"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">No. Kad Pengenalan</label>
+        <input type="text" id="inputNoKad" class="form-control"
+          placeholder="Contoh: 140512-10-1234"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jantina</label>
+        <select id="inputJantina" class="form-control">
+          <option value="">— Pilih —</option>
+          <option value="L">Lelaki</option>
+          <option value="P">Perempuan</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modalMurid')">Batal</button>
+      <button class="btn btn-primary" onclick="simpanMurid()">
+        <i class="fas fa-save"></i> Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MODAL: IMPORT CSV
+============================================================ -->
+<div class="modal-backdrop" id="modalImport">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-csv" style="color:#22c55e;margin-right:8px"></i>Import Murid dari CSV</h3>
+      <button class="modal-close" onclick="tutupModal('modalImport')">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Langkah 1: Pilih Kelas -->
+      <div class="form-group">
+        <label class="form-label">Langkah 1: Pilih Kelas <span>*</span></label>
+        <select id="importKelasId" class="form-control"></select>
+      </div>
+
+      <!-- Langkah 2: Format CSV -->
+      <div class="form-group">
+        <label class="form-label">Langkah 2: Format Fail CSV</label>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;font-size:12px;color:#374151">
+          <p style="margin-bottom:6px;font-weight:600">📋 Format header CSV yang diperlukan:</p>
+          <code style="background:#e2e8f0;padding:4px 8px;border-radius:4px;font-size:11px;display:block;margin-bottom:8px">
+            namaMurid,noKad,jantina
+          </code>
+          <p style="color:#64748b;font-size:11px">Contoh data:</p>
+          <code style="background:#e2e8f0;padding:6px 8px;border-radius:4px;font-size:11px;display:block;line-height:1.8">
+            namaMurid,noKad,jantina<br>
+            Muhammad Ali bin Abu,140512-10-1234,L<br>
+            Siti Aisyah binti Ahmad,140203-08-5678,P
+          </code>
+          <p style="color:#94a3b8;font-size:11px;margin-top:8px">
+            ⚠️ Kolum <strong>noKad</strong> dan <strong>jantina</strong> adalah pilihan (optional).
+            Kolum <strong>namaMurid</strong> wajib diisi.
+          </p>
+        </div>
+      </div>
+
+      <!-- Langkah 3: Upload -->
+      <div class="form-group">
+        <label class="form-label">Langkah 3: Muat Naik Fail CSV</label>
+        <div class="import-zone" id="importZone"
+          onclick="document.getElementById('csvFileInput').click()"
+          ondragover="dragOver(event)" ondragleave="dragLeave(event)"
+          ondrop="dropFile(event)">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Klik untuk pilih fail atau seret & lepas di sini</p>
+          <small>Hanya fail .csv atau .txt diterima</small>
+        </div>
+        <input type="file" id="csvFileInput" accept=".csv,.txt"
+          style="display:none" onchange="bacaCSV(this)"/>
+      </div>
+
+      <!-- Preview Table -->
+      <div class="preview-wrap" id="previewWrap">
+        <div class="preview-header">
+          <span id="previewCount">0 murid dijumpai</span>
+          <button class="btn btn-ghost btn-sm" onclick="resetImport()">
+            <i class="fas fa-times"></i> Buang
+          </button>
+        </div>
+        <div style="max-height:200px;overflow-y:auto">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Nama Murid</th><th>No. Kad</th><th>Jantina</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modalImport')">Batal</button>
+      <button class="btn btn-success" id="btnImportSubmit"
+        onclick="submitImport()" disabled>
+        <i class="fas fa-upload"></i> Import Sekarang
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MODAL: SAHKAN PADAM
+============================================================ -->
+<div class="modal-backdrop" id="modalPadam">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3 style="color:#dc2626">
+        <i class="fas fa-exclamation-triangle" style="margin-right:8px"></i>Sahkan Padam
+      </h3>
+      <button class="modal-close" onclick="tutupModal('modalPadam')">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:#374151" id="mesejPadam">
+        Adakah anda pasti mahu memadam item ini?
+      </p>
+      <p style="font-size:12px;color:#94a3b8;margin-top:8px">
+        ⚠️ Tindakan ini tidak boleh dibuat asal.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modalPadam')">Batal</button>
+      <button class="btn btn-danger" id="btnSahkanPadam" onclick="sahkanPadam()">
+        <i class="fas fa-trash"></i> Ya, Padam
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+  // ============================================================
+  // KONFIGURASI — ISIKAN URL GAS ANDA
+  // ============================================================
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbytlzlrheNTnx-fWnt5G3UGLfAQpEMMP8UGuDvsZQmNtNTz0lMpX4n9VmdVU9iHNjr4mw/exec'; // ← TAMPAL URL GAS ANDA DI SINI
+
+  // ============================================================
+  // STATE — simpan data dalam memori
+  // ============================================================
+  let senaraiKelas  = []; // Semua data kelas
+  let senaraiMurid  = []; // Semua data murid (untuk tab murid)
+  let padamType     = ''; // 'kelas' atau 'murid'
+  let padamId       = ''; // ID item yang nak dipadam
+  let csvData       = []; // Data murid dari CSV yang dibaca
+
+  // ============================================================
+  // HELPER FUNCTIONS
+  // ============================================================
+  function jsonpCall(params, callback) {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+    window[cbName] = function(data) {
+      callback(data);
+      delete window[cbName];
+      const el = document.getElementById(cbName);
+      if (el) el.remove();
+    };
+    params.callback = cbName;
+    const query = Object.keys(params)
+      .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+      .join('&');
+    const script = document.createElement('script');
+    script.id = cbName;
+    script.src = GAS_URL + '?' + query;
+    script.onerror = function() {
+      callback({ status: 'error', mesej: 'Gagal sambung ke server.' });
+      delete window[cbName];
+      script.remove();
+    };
+    document.head.appendChild(script);
+  }
+
+  function tunjukLoading(teks) {
+    document.getElementById('loadingText').textContent = teks || 'Memuatkan...';
+    document.getElementById('loadingOverlay').style.display = 'flex';
+  }
+  function sorokLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
+
+  function tunjukToast(mesej, jenis) {
+    const container = document.getElementById('toastContainer');
+    const icon = jenis === 'berjaya' ? 'fa-check-circle'
+               : jenis === 'error'   ? 'fa-times-circle' : 'fa-info-circle';
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + (jenis || 'info');
+    toast.innerHTML = `<i class="fas ${icon}"></i> ${mesej}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
+
+  function bukaModal(id)  { document.getElementById(id).classList.add('open'); }
+  function tutupModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  }
+  function tutupSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  }
+
+  function buatLogout() {
+    const token = localStorage.getItem('pbd_token');
+    jsonpCall({ action: 'logout', token }, function() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    });
+  }
+
+  // ============================================================
+  // INIT — semak session & muat data
+  // ============================================================
+  window.addEventListener('DOMContentLoaded', function() {
+    // Semak session — kalau tiada token, hantar ke login
+    const token = localStorage.getItem('pbd_token');
+    const nama  = localStorage.getItem('pbd_nama');
+    if (!token) { window.location.href = 'index.html'; return; }
+
+    document.getElementById('namaGuruTopbar').textContent = nama || 'Cikgu';
+
+    // Muat data kelas
+    muatKelas();
+  });
+
+  // ============================================================
+  // TAB SWITCHING
+  // ============================================================
+  function tunjukTab(tab) {
+    document.getElementById('tabKelas').style.display  = tab === 'kelas' ? 'block' : 'none';
+    document.getElementById('tabMurid').style.display  = tab === 'murid' ? 'block' : 'none';
+    document.getElementById('tabKelasBtn').classList.toggle('active', tab === 'kelas');
+    document.getElementById('tabMuridBtn').classList.toggle('active', tab === 'murid');
+
+    // Kalau tab murid, muat senarai murid
+    if (tab === 'murid') muatMurid();
+  }
+
+  // ============================================================
+  // BAHAGIAN KELAS
+  // ============================================================
+  function muatKelas() {
+    const token = localStorage.getItem('pbd_token');
+    tunjukLoading('Memuatkan senarai kelas...');
+
+    jsonpCall({ action: 'getKelas', token }, function(res) {
+      sorokLoading();
+      if (res.status !== 'berjaya') {
+        tunjukToast(res.mesej || 'Gagal muat kelas!', 'error'); return;
+      }
+
+      senaraiKelas = res.data || [];
+      renderTableKelas(senaraiKelas);
+      isiDropdownKelas();
+      renderSidebarKelas(senaraiKelas);
+
+      document.getElementById('bilanganKelas').textContent =
+        senaraiKelas.length + ' kelas';
+    });
+  }
+
+  function renderTableKelas(data) {
+    const tbody = document.getElementById('tableBodyKelas');
+
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6">
+        <div class="empty-state">
+          <i class="fas fa-school"></i>
+          <p>Tiada kelas lagi. Klik <strong>"Tambah Kelas"</strong> untuk mulakan.</p>
+        </div></td></tr>`;
+      return;
+    }
+
+    // Warna badge ikut subjek
+    const warnaBadge = {
+      'Matematik'         : 'badge-blue',
+      'Sains'             : 'badge-green',
+      'Bahasa Melayu'     : 'badge-amber',
+      'Bahasa Inggeris'   : 'badge-purple',
+    };
+
+    tbody.innerHTML = data.map(function(k, i) {
+      const warna = warnaBadge[k.subjek] || 'badge-blue';
+      return `<tr>
+        <td style="color:#94a3b8;font-size:12px">${i + 1}</td>
+        <td><strong>${k.namaKelas}</strong></td>
+        <td><span class="badge ${warna}">${k.subjek}</span></td>
+        <td>Tahun ${k.tahun}</td>
+        <td>
+          <span style="font-weight:600">${k.bilanganMurid || 0}</span>
+          <span style="color:#94a3b8;font-size:11px"> murid</span>
+        </td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm"
+              onclick="bukaModalEditKelas('${k.kelasId}')">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm"
+              onclick="konfirmPadam('kelas','${k.kelasId}','${k.namaKelas}')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Filter carian kelas
+  function filterKelas() {
+    const cari = document.getElementById('cariKelas').value.toLowerCase();
+    const filtered = senaraiKelas.filter(k =>
+      k.namaKelas.toLowerCase().includes(cari) ||
+      k.subjek.toLowerCase().includes(cari)
+    );
+    renderTableKelas(filtered);
+  }
+
+  // ============================================================
+  // MODAL TAMBAH / EDIT KELAS
+  // ============================================================
+  function bukaModalTambahKelas() {
+    document.getElementById('modalKelasTitle').textContent = 'Tambah Kelas Baru';
+    document.getElementById('kelasIdEdit').value = '';
+    document.getElementById('inputNamaKelas').value = '';
+    document.getElementById('inputSubjek').value = '';
+    document.getElementById('inputTahun').value = '';
+    bukaModal('modalKelas');
+  }
+
+  function bukaModalEditKelas(kelasId) {
+    // Cari data kelas yang nak diedit
+    const kelas = senaraiKelas.find(k => k.kelasId === kelasId);
+    if (!kelas) return;
+
+    document.getElementById('modalKelasTitle').textContent = 'Edit Kelas';
+    document.getElementById('kelasIdEdit').value    = kelas.kelasId;
+    document.getElementById('inputNamaKelas').value = kelas.namaKelas;
+    document.getElementById('inputSubjek').value    = kelas.subjek;
+    document.getElementById('inputTahun').value     = kelas.tahun;
+    bukaModal('modalKelas');
+  }
+
+  function simpanKelas() {
+    const namaKelas = document.getElementById('inputNamaKelas').value.trim();
+    const subjek    = document.getElementById('inputSubjek').value;
+    const tahun     = document.getElementById('inputTahun').value;
+    const kelasId   = document.getElementById('kelasIdEdit').value;
+    const token     = localStorage.getItem('pbd_token');
+
+    // Validasi
+    if (!namaKelas) { tunjukToast('Sila isi nama kelas!', 'error'); return; }
+    if (!subjek)    { tunjukToast('Sila pilih subjek!', 'error'); return; }
+    if (!tahun)     { tunjukToast('Sila pilih tahun!', 'error'); return; }
+
+    tunjukLoading(kelasId ? 'Mengemaskini kelas...' : 'Menambah kelas...');
+
+    const params = kelasId
+      ? { action: 'editKelas', kelasId, namaKelas, subjek, tahun, token }
+      : { action: 'tambahKelas', namaKelas, subjek, tahun, token };
+
+    jsonpCall(params, function(res) {
+      sorokLoading();
+      tutupModal('modalKelas');
+      if (res.status === 'berjaya') {
+        tunjukToast(res.mesej, 'berjaya');
+        muatKelas(); // Refresh senarai kelas
+      } else {
+        tunjukToast(res.mesej || 'Gagal simpan!', 'error');
+      }
+    });
+  }
+
+  // ============================================================
+  // BAHAGIAN MURID
+  // ============================================================
+  function muatMurid() {
+    const token   = localStorage.getItem('pbd_token');
+    const kelasId = document.getElementById('filterKelasDropdown').value;
+
+    tunjukLoading('Memuatkan senarai murid...');
+
+    const params = { action: 'getMurid', token };
+    if (kelasId) params.kelasId = kelasId;
+
+    jsonpCall(params, function(res) {
+      sorokLoading();
+      if (res.status !== 'berjaya') {
+        tunjukToast(res.mesej || 'Gagal muat murid!', 'error'); return;
+      }
+      senaraiMurid = res.data || [];
+      renderTableMurid(senaraiMurid);
+    });
+  }
+
+  function renderTableMurid(data) {
+    const tbody = document.getElementById('tableBodyMurid');
+
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6">
+        <div class="empty-state">
+          <i class="fas fa-user-graduate"></i>
+          <p>Tiada murid lagi. Import dari CSV atau tambah secara manual.</p>
+        </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(function(m, i) {
+      // Cari nama kelas untuk murid ini
+      const kelas = senaraiKelas.find(k => k.kelasId === m.kelasId);
+      const namaKelas = kelas ? kelas.namaKelas : m.kelasId;
+
+      const jantinaLabel = m.jantina === 'L' ? '👦 Lelaki' :
+                           m.jantina === 'P' ? '👧 Perempuan' : '—';
+
+      return `<tr>
+        <td style="color:#94a3b8;font-size:12px">${i + 1}</td>
+        <td><strong>${m.namaMurid}</strong></td>
+        <td style="font-size:12px;color:#64748b">${m.noKad || '—'}</td>
+        <td style="font-size:12px">${jantinaLabel}</td>
+        <td><span class="badge badge-blue">${namaKelas}</span></td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm"
+              onclick="bukaModalEditMurid('${m.muridId}')">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm"
+              onclick="konfirmPadam('murid','${m.muridId}','${m.namaMurid}')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Filter carian murid
+  function filterMurid() {
+    const cari = document.getElementById('cariMurid').value.toLowerCase();
+    const filtered = senaraiMurid.filter(m =>
+      m.namaMurid.toLowerCase().includes(cari) ||
+      (m.noKad && m.noKad.toLowerCase().includes(cari))
+    );
+    renderTableMurid(filtered);
+  }
+
+  // Isi dropdown kelas (digunakan dalam beberapa tempat)
+  function isiDropdownKelas() {
+    const dropdowns = [
+      'filterKelasDropdown',
+      'inputMuridKelas',
+      'importKelasId'
+    ];
+
+    dropdowns.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const nilaiSedia = el.value;
+
+      // Kekal pilihan kosong kalau ada
+      const opsKosong = el.querySelector('option[value=""]');
+      el.innerHTML = opsKosong ? opsKosong.outerHTML : '';
+
+      senaraiKelas.forEach(function(k) {
+        const opt = document.createElement('option');
+        opt.value = k.kelasId;
+        opt.textContent = k.namaKelas + ' (' + k.subjek + ')';
+        el.appendChild(opt);
+      });
+
+      if (nilaiSedia) el.value = nilaiSedia;
+    });
+  }
+
+  // ============================================================
+  // MODAL TAMBAH / EDIT MURID
+  // ============================================================
+  function bukaModalTambahMurid() {
+    document.getElementById('modalMuridTitle').textContent = 'Tambah Murid Baru';
+    document.getElementById('muridIdEdit').value   = '';
+    document.getElementById('inputNamaMurid').value = '';
+    document.getElementById('inputNoKad').value    = '';
+    document.getElementById('inputJantina').value  = '';
+    // Set kelas kepada yang dipilih dalam dropdown (kalau ada)
+    const kelasFilter = document.getElementById('filterKelasDropdown').value;
+    if (kelasFilter) document.getElementById('inputMuridKelas').value = kelasFilter;
+    bukaModal('modalMurid');
+  }
+
+  function bukaModalEditMurid(muridId) {
+    const murid = senaraiMurid.find(m => m.muridId === muridId);
+    if (!murid) return;
+
+    document.getElementById('modalMuridTitle').textContent = 'Edit Murid';
+    document.getElementById('muridIdEdit').value    = murid.muridId;
+    document.getElementById('inputMuridKelas').value = murid.kelasId;
+    document.getElementById('inputNamaMurid').value = murid.namaMurid;
+    document.getElementById('inputNoKad').value     = murid.noKad || '';
+    document.getElementById('inputJantina').value   = murid.jantina || '';
+    bukaModal('modalMurid');
+  }
+
+  function simpanMurid() {
+    const muridId  = document.getElementById('muridIdEdit').value;
+    const kelasId  = document.getElementById('inputMuridKelas').value;
+    const namaMurid= document.getElementById('inputNamaMurid').value.trim();
+    const noKad    = document.getElementById('inputNoKad').value.trim();
+    const jantina  = document.getElementById('inputJantina').value;
+    const token    = localStorage.getItem('pbd_token');
+
+    if (!kelasId)   { tunjukToast('Sila pilih kelas!', 'error'); return; }
+    if (!namaMurid) { tunjukToast('Sila isi nama murid!', 'error'); return; }
+
+    tunjukLoading(muridId ? 'Mengemaskini murid...' : 'Menambah murid...');
+
+    const params = muridId
+      ? { action: 'editMurid', muridId, kelasId, namaMurid, noKad, jantina, token }
+      : { action: 'tambahMurid', kelasId, namaMurid, noKad, jantina, token };
+
+    jsonpCall(params, function(res) {
+      sorokLoading();
+      tutupModal('modalMurid');
+      if (res.status === 'berjaya') {
+        tunjukToast(res.mesej, 'berjaya');
+        muatMurid();
+        muatKelas(); // Refresh sebab bilangan murid berubah
+      } else {
+        tunjukToast(res.mesej || 'Gagal simpan!', 'error');
+      }
+    });
+  }
+
+  // ============================================================
+  // IMPORT CSV
+  // ============================================================
+  function bukaModalImport() {
+    resetImport();
+    bukaModal('modalImport');
+  }
+
+  // Fungsi bila fail dipilih
+  function bacaCSV(input) {
+    const fail = input.files[0];
+    if (!fail) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      prosesCSV(e.target.result);
+    };
+    reader.readAsText(fail, 'UTF-8');
+  }
+
+  // Drag & Drop
+  function dragOver(e) {
+    e.preventDefault();
+    document.getElementById('importZone').classList.add('dragover');
+  }
+  function dragLeave(e) {
+    document.getElementById('importZone').classList.remove('dragover');
+  }
+  function dropFile(e) {
+    e.preventDefault();
+    document.getElementById('importZone').classList.remove('dragover');
+    const fail = e.dataTransfer.files[0];
+    if (fail) {
+      const reader = new FileReader();
+      reader.onload = function(ev) { prosesCSV(ev.target.result); };
+      reader.readAsText(fail, 'UTF-8');
+    }
+  }
+
+  // Parse kandungan CSV
+  function prosesCSV(kandungan) {
+    // Pisahkan kepada baris
+    const baris = kandungan.split('\n').map(b => b.trim()).filter(b => b);
+    if (baris.length < 2) {
+      tunjukToast('Fail CSV kosong atau format salah!', 'error'); return;
+    }
+
+    // Baris pertama = header
+    const headers = baris[0].split(',').map(h => h.trim().toLowerCase());
+
+    // Semak header wajib
+    const idxNama = headers.indexOf('namamurid');
+    if (idxNama === -1) {
+      tunjukToast('Header "namaMurid" tidak dijumpai dalam CSV!', 'error'); return;
+    }
+
+    const idxKad      = headers.indexOf('nokad');
+    const idxJantina  = headers.indexOf('jantina');
+
+    csvData = [];
+
+    // Loop dari baris ke-2
+    for (let i = 1; i < baris.length; i++) {
+      // Handle koma dalam nama (nama dalam "tanda petik")
+      const cols = baris[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+      const nama = cols[idxNama] || '';
+      if (!nama) continue;
+
+      csvData.push({
+        namaMurid : nama,
+        noKad     : idxKad     >= 0 ? (cols[idxKad]     || '') : '',
+        jantina   : idxJantina >= 0 ? (cols[idxJantina] || '') : ''
+      });
+    }
+
+    // Tunjuk preview
+    tunjukPreviewCSV();
+  }
+
+  function tunjukPreviewCSV() {
+    document.getElementById('previewWrap').style.display = 'block';
+    document.getElementById('previewCount').textContent =
+      csvData.length + ' murid dijumpai';
+
+    const tbody = document.getElementById('previewBody');
+    // Tunjuk maksimum 5 baris preview
+    tbody.innerHTML = csvData.slice(0, 5).map(function(m, i) {
+      return `<tr>
+        <td>${i + 1}</td>
+        <td>${m.namaMurid}</td>
+        <td>${m.noKad || '—'}</td>
+        <td>${m.jantina || '—'}</td>
+      </tr>`;
+    }).join('') + (csvData.length > 5
+      ? `<tr><td colspan="4" style="color:#94a3b8;font-style:italic;font-size:11px">
+          ... dan ${csvData.length - 5} lagi murid</td></tr>`
+      : '');
+
+    document.getElementById('btnImportSubmit').disabled = false;
+  }
+
+  function resetImport() {
+    csvData = [];
+    document.getElementById('csvFileInput').value = '';
+    document.getElementById('previewWrap').style.display = 'none';
+    document.getElementById('previewBody').innerHTML = '';
+    document.getElementById('btnImportSubmit').disabled = true;
+  }
+
+  function submitImport() {
+    const kelasId = document.getElementById('importKelasId').value;
+    const token   = localStorage.getItem('pbd_token');
+
+    if (!kelasId) { tunjukToast('Sila pilih kelas dahulu!', 'error'); return; }
+    if (csvData.length === 0) { tunjukToast('Tiada data untuk diimport!', 'error'); return; }
+
+    tunjukLoading('Mengimport ' + csvData.length + ' murid...');
+
+    jsonpCall({
+      action    : 'importMurid',
+      kelasId   : kelasId,
+      muridData : JSON.stringify(csvData),
+      token     : token
+    }, function(res) {
+      sorokLoading();
+      tutupModal('modalImport');
+      resetImport();
+      if (res.status === 'berjaya') {
+        tunjukToast(res.mesej, 'berjaya');
+        muatMurid();
+        muatKelas();
+      } else {
+        tunjukToast(res.mesej || 'Import gagal!', 'error');
+      }
+    });
+  }
+
+  // ============================================================
+  // PADAM
+  // ============================================================
+  function konfirmPadam(type, id, nama) {
+    padamType = type;
+    padamId   = id;
+    const label = type === 'kelas' ? 'kelas' : 'murid';
+    document.getElementById('mesejPadam').textContent =
+      `Adakah anda pasti mahu memadam ${label} "${nama}"?`;
+    bukaModal('modalPadam');
+  }
+
+  function sahkanPadam() {
+    const token  = localStorage.getItem('pbd_token');
+    const action = padamType === 'kelas' ? 'padamKelas' : 'padamMurid';
+    const params = padamType === 'kelas'
+      ? { action, kelasId: padamId, token }
+      : { action, muridId: padamId, token };
+
+    tunjukLoading('Memadam...');
+    jsonpCall(params, function(res) {
+      sorokLoading();
+      tutupModal('modalPadam');
+      if (res.status === 'berjaya') {
+        tunjukToast(res.mesej, 'berjaya');
+        if (padamType === 'kelas') muatKelas();
+        else { muatMurid(); muatKelas(); }
+      } else {
+        tunjukToast(res.mesej || 'Gagal padam!', 'error');
+      }
+    });
+  }
+
+  // ============================================================
+  // RENDER SIDEBAR KELAS
+  // ============================================================
+  function renderSidebarKelas(senarai) {
+    const container = document.getElementById('sidebarKelas');
+    if (!senarai.length) {
+      container.innerHTML = `<div style="padding:8px 12px;font-size:11px;color:var(--text-muted)">Tiada kelas lagi</div>`;
+      return;
+    }
+    container.innerHTML = senarai.map(k => `
+      <a href="pentaksiran.html?kelas=${k.kelasId}" class="nav-item" onclick="tutupSidebar()">
+        <i class="fas fa-users"></i>
+        <span style="flex:1">${k.namaKelas}</span>
+        <span class="nav-badge">${k.bilanganMurid || 0}</span>
+      </a>`).join('');
+  }
+</script>
+
+</body>
+</html>
